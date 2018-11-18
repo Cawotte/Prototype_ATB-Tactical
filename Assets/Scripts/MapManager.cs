@@ -3,36 +3,48 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class MapManager : Singleton {
+public class MapManager : Singleton<MapManager> {
 
     [SerializeField] private TilemapPathfinder pathfinder;
-    [SerializeField] private Tilemap tilemapRef;
+    [SerializeField] private Grid grid;
 
     [SerializeField] private GameObject character;
 
-    private void Update()
-    {
-        if ( Input.GetMouseButtonDown(0) )
-        {
-            
-            Vector3 clickedWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector3Int clickedCellPos = tilemapRef.WorldToCell(clickedWorldPos);
-            Vector3Int characterCellPos = tilemapRef.WorldToCell(character.transform.position);
-            /*
-            Debug.Log(string.Format("Coords of mouse is [X: {0} Y: {0}]", clickedWorldPos.x, clickedWorldPos.y));
-            //TileData tile = world.Tile((int)pos.x, (int)pos.y);
-            pathfinder.WriteType(clickedWorldPos);*/
+    private Stack<Vector3Int> path;
 
-            Stack<Vector3Int> path = pathfinder.GetPath(characterCellPos, clickedCellPos);
-            if ( path == null )
-            {
-                Debug.Log("Pas de chemin possible!");
-            }
-            else
-            {
-                Debug.Log("Draw path!");
-            }
-            pathfinder.DrawPath(path);
+    public Stack<Vector3Int> Path
+    {
+        get
+        {
+            return path;
         }
     }
+    
+    
+    public bool CalculatePathFromTo(Vector3 startWorldPos, Vector3 goalWorldPos)
+    {
+        Vector3Int goalCellPos = grid.WorldToCell(goalWorldPos);
+        Vector3Int startCellPos = grid.WorldToCell(startWorldPos);
+
+        path = pathfinder.GetPath(startCellPos, goalCellPos);
+        return (path != null);
+    }
+
+    public void DrawPath()
+    {
+        pathfinder.DrawPath(path);
+    }
+
+    public void ErasePath()
+    {
+        pathfinder.ErasePath();
+        path = null;
+    }
+
+    public void ErasePathTileAt(Vector3 worldPos)
+    {
+        pathfinder.ErasePathTileAt(grid.WorldToCell(worldPos));
+    }
+
+
 }

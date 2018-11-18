@@ -12,7 +12,7 @@ public class TilemapPathfinder : MonoBehaviour {
     [SerializeField] private Tilemap tilemapPath;
     [SerializeField] private Tile pathTile;
 
-    private int[,] MapData;
+    //private int[,] MapData;
     
     public void WriteType(Vector3 worldPos)
     {
@@ -25,29 +25,30 @@ public class TilemapPathfinder : MonoBehaviour {
         Location goal = new Location(endPos);
         Location current = null;
 
+        if ( start.EqualsTo(goal) )
+        {
+            return new Stack<Vector3Int>(); //return empty path.
+        }
+
         //Keep tracks of the processed locations and unprocessed neighbors. 
         List<Location> closedList = new List<Location>();
         List<Location> openList = new List<Location>();
         int g = 0;
         
-
         openList.Add(start);
         
-
-
-        int floodStop = 0;
-        while ( openList.Count > 0 && floodStop < 2000)
+        while ( openList.Count > 0 )
         {
-            floodStop++;
 
-            //Get the loc with the lowest FScore. 
+            //Get the unprocessed location with the lowest FScore. 
             var lowest = openList.Min(loc => loc.Fscore);
             current = openList.First(loc => loc.Fscore == lowest);
 
             closedList.Add(current);
             openList.Remove(current);
 
-            if ( current.HasSamePos(goal) )
+            //If current is the goal cell.
+            if ( current.EqualsTo(goal) )
             {
                 //get final path
                 Stack<Vector3Int> path = new Stack<Vector3Int>();
@@ -60,6 +61,7 @@ public class TilemapPathfinder : MonoBehaviour {
                 return path;
             }
 
+            //We move the location from unprocessed to processed.
             openList.Remove(current);
             closedList.Add(current);
 
@@ -71,13 +73,13 @@ public class TilemapPathfinder : MonoBehaviour {
                 Location neighbor = new Location(neighborPos);
 
                 //if this adjacent square is already in the closed list, ignore it
-                if (closedList.FirstOrDefault(loc => loc.HasSamePos(neighbor)) != null)
+                if (closedList.FirstOrDefault(loc => loc.EqualsTo(neighbor)) != null)
                     continue;
 
                 // if it's not in the open list...
-                if (openList.FirstOrDefault(loc => loc.HasSamePos(neighbor)) == null)
+                if (openList.FirstOrDefault(loc => loc.EqualsTo(neighbor)) == null)
                 {
-                    // compute its score, set the parent
+                    // compute its scores, set the parent
                     neighbor.Gscore = g;
                     neighbor.Hscore = (int)Vector3Int.Distance(neighbor.pos, goal.pos);
                     neighbor.Fscore = neighbor.Gscore + neighbor.Hscore;
@@ -102,17 +104,32 @@ public class TilemapPathfinder : MonoBehaviour {
 
         }
 
-        Debug.Log("flood stop = " + floodStop);
+        //Debug.Log("There's no path possible to go there.");
         return null;
     }
 
     public void DrawPath(Stack<Vector3Int> path)
     {
-        tilemapPath.ClearAllTiles();
-        while ( path != null && path.Count > 0)
+        if ( path == null )
         {
-            tilemapPath.SetTile(path.Pop(), pathTile);
+            return;
         }
+        Stack<Vector3Int> pathCopy = new Stack<Vector3Int>(new Stack<Vector3Int>(path)); ;
+        tilemapPath.ClearAllTiles();
+        while ( path != null && pathCopy.Count > 0)
+        {
+            tilemapPath.SetTile(pathCopy.Pop(), pathTile);
+        }
+    }
+
+    public void ErasePath()
+    {
+        tilemapPath.ClearAllTiles();
+    }
+
+    public void ErasePathTileAt(Vector3Int cellPos)
+    {
+        tilemapPath.SetTile(cellPos, null);
     }
 
     public void WriteType(Vector3Int cellPos)
@@ -131,22 +148,6 @@ public class TilemapPathfinder : MonoBehaviour {
     }
 
     #region private Methods
-    private void InitializeMapData()
-    {
-        //Get the furthest corners of each map to determine the size of the map :
-
-        Vector3Int[] minCorners = new Vector3Int[2];
-        minCorners[0] = tilemapGround.origin;
-        minCorners[1] = tilemapObstacle.origin;
-        Vector3Int minCorner = Vector3Int.Min(minCorners[0], minCorners[1]);
-
-        Vector3Int[] maxCorners = new Vector3Int[2];
-        maxCorners[0] = tilemapGround.origin;
-        maxCorners[1] = tilemapObstacle.origin;
-        Vector3Int maxCorner = Vector3Int.Min(maxCorners[0], maxCorners[1]);
-
-
-    }
 
     private List<Vector3Int> GetValidNeighbors(Vector3Int cellPos)
     {
@@ -171,47 +172,12 @@ public class TilemapPathfinder : MonoBehaviour {
 
         return neighbors;
     }
-
-    private Vector3Int GetEntryWithMinValue(Dictionary<Vector3Int, float> dictionary)
-    {
-        float minValue = Mathf.Infinity;
-        bool firstItem = true;
-        Vector3Int minEntry = Vector3Int.zero;
-        foreach (KeyValuePair<Vector3Int, float> entry in dictionary)
-        {
-            if (entry.Value < minValue)
-            {
-                minValue = entry.Value;
-                minEntry = entry.Key;
-            }
-        }
-        
-
-        return minEntry;
-        
-    }
+    
     private bool IsWalkable(Vector3Int cellPos)
     {
         bool tileHasGround = tilemapGround.HasTile(cellPos);
         bool tileHasObstacle = tilemapObstacle.HasTile(cellPos);
         return ( tileHasGround && !tileHasObstacle);
-    }
-    private class Vector3IntEqualityComparer : IEqualityComparer<Vector3Int>
-    {
-        public bool Equals(Vector3Int a, Vector3Int b)
-        {
-            if ( a.x == b.x && a.y == b.y )
-            {
-                return true;
-            }
-            return false;
-        }
-
-        public int GetHashCode(Vector3Int vec)
-        {
-            int hCode = vec.x ^ vec.y;
-            return hCode.GetHashCode();
-        }
     }
 
     private class Location
@@ -225,7 +191,7 @@ public class TilemapPathfinder : MonoBehaviour {
             this.pos = pos;
         }
 
-        public bool HasSamePos(Location loc)
+        public bool EqualsTo(Location loc)
         {
             return (pos.x == loc.pos.x && pos.y == loc.pos.y);
         }
