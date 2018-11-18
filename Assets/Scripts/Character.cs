@@ -13,6 +13,8 @@ public class Character : MonoBehaviour {
     private Action leftClickAction = null;
 
     private Vector3 clickedWorldPos;
+    private float valueATB = 1f;
+    private float durationATB = 2f;
 
     private bool isMoving = false;
 
@@ -32,11 +34,14 @@ public class Character : MonoBehaviour {
         if ( Input.GetMouseButtonDown(0) )
         {
             clickedWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            leftClickAction.Invoke();
+            leftClickAction?.Invoke();
         }
         if (Input.GetMouseButtonDown(1))
         {
-            rightClickAction.Invoke();
+            if ( valueATB == 1f )
+            {
+                rightClickAction?.Invoke();
+            }
         }
 
     }
@@ -86,6 +91,7 @@ public class Character : MonoBehaviour {
                 path.Pop();
             }
             transform.position = grid.GetCellCenterWorld(path.Pop());
+            Timing.RunCoroutine(_reloadATB());
             yield break;
         }
 
@@ -94,6 +100,9 @@ public class Character : MonoBehaviour {
         float step, t;
 
         isMoving = true;
+
+        valueATB = 0f;
+        UIManager.Instance.SetPlayerATB(valueATB);
 
         //The character move from cell to cell.
         while (path.Count > 0)
@@ -107,14 +116,31 @@ public class Character : MonoBehaviour {
             while (t <= 1.0f)
             {
                 t += step; // Goes from 0 to 1, incrementing by step each time
-                transform.position = Vector3.Lerp(currentPos, nextPos, t); 
+                transform.position = Vector3.Lerp(currentPos, nextPos, t);
+                UIManager.Instance.SetPlayerATBPosition(transform.position);
                 yield return Timing.WaitForOneFrame;         // Leave the routine and return here in the next frame
             }
             transform.position = nextPos;
             MapManager.Instance.ErasePathTileAt(nextPos);
         }
 
+        Timing.RunCoroutine(_reloadATB());
         isMoving = false;
+    }
+
+    private IEnumerator<float> _reloadATB()
+    {
+        float t = 0f;
+        while (t < durationATB)
+        {
+            t += Time.deltaTime;
+            valueATB = Mathf.Lerp(0, 1, t / durationATB);
+            UIManager.Instance.SetPlayerATB(valueATB);
+            yield return Timing.WaitForOneFrame;
+        }
+        
+        valueATB = 1f;
+        UIManager.Instance.SetPlayerATB(valueATB);
     }
     #endregion
 
