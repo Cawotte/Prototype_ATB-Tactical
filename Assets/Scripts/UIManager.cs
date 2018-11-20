@@ -13,8 +13,9 @@ public class UIManager : Singleton<UIManager> {
         playerATB.value = value;
     }
     
-    public void SetPlayerATBPosition(Vector3 worldPos)
+    public void SetPlayerATBPosition(Vector3 worldPos, Vector3 offset)
     {
-        playerATB.transform.position = Camera.main.WorldToScreenPoint(worldPos);
+        Vector3 pos = Camera.main.WorldToScreenPoint(worldPos + offset);
+        playerATB.GetComponent<RectTransform>().anchoredPosition = pos;
     }
 }

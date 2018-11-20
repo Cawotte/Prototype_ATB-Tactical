@@ -1,148 +1,154 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using MEC;
+﻿namespace Tactical.Characters
+{
 
-public class Character : MonoBehaviour {
 
-    [SerializeField] private Grid grid;
-    [SerializeField] private float speed;
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using MEC;
 
-    private Action rightClickAction = null;
-    private Action leftClickAction = null;
-
-    private Vector3 clickedWorldPos;
-    private float valueATB = 1f;
-    private float durationATB = 2f;
-
-    private bool isMoving = false;
-
-    private void Awake()
+    public class Character : MonoBehaviour
     {
-        leftClickAction += DrawPathToClickedPos;
-        rightClickAction += MoveToGoal;
-    }
 
-    private void Update()
-    {
-        if (isMoving)
+        [SerializeField] private Grid grid;
+        [SerializeField] private float speed;
+
+        private Action rightClickAction = null;
+        private Action leftClickAction = null;
+
+        private Vector3 clickedWorldPos;
+        private float valueATB = 1f;
+        private float durationATB = 2f;
+
+        private bool isMoving = false;
+
+        private void Awake()
         {
-            return;
+            leftClickAction += DrawPathToClickedPos;
+            rightClickAction += MoveToGoal;
         }
 
-        if ( Input.GetMouseButtonDown(0) )
+        private void Update()
         {
-            clickedWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            leftClickAction?.Invoke();
-        }
-        if (Input.GetMouseButtonDown(1))
-        {
-            if ( valueATB == 1f )
+            if (isMoving)
             {
-                rightClickAction?.Invoke();
+                return;
+            }
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                clickedWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                leftClickAction?.Invoke();
+            }
+            if (Input.GetMouseButtonDown(1))
+            {
+                if (valueATB == 1f)
+                {
+                    rightClickAction?.Invoke();
+                }
+            }
+
+        }
+
+
+        private void DrawPathToClickedPos()
+        {
+            MapManager.Instance.ErasePath();
+
+            if (MapManager.Instance.CalculatePathFromTo(transform.position, clickedWorldPos))
+            {
+                //Debug.Log("Path found!");
+                MapManager.Instance.DrawPath();
+            }
+            else
+            {
+                //Debug.Log("No path possible.");
             }
         }
 
-    }
-
-
-    private void DrawPathToClickedPos()
-    {
-        MapManager.Instance.ErasePath();
-        
-        if (MapManager.Instance.CalculatePathFromTo(transform.position, clickedWorldPos) )
+        #region Private Methods
+        private void MoveToGoal()
         {
-            //Debug.Log("Path found!");
-            MapManager.Instance.DrawPath();
-        }
-        else
-        {
-            //Debug.Log("No path possible.");
-        }
-    }
-
-    #region Private Methods
-    private void MoveToGoal()
-    {
-        Timing.RunCoroutine(_MoveToGoal().CancelWith(gameObject));
-    }
-
-    private Vector3 GetCharacterCellCenter()
-    {
-        return grid.GetCellCenterWorld(grid.WorldToCell(transform.position));
-    }
-    #endregion
-    #region Coroutines
-    private IEnumerator<float> _MoveToGoal()
-    {
-        Stack<Vector3Int> path = MapManager.Instance.Path;
-
-        if (path == null || path.Count == 0)
-        {
-            yield break;
+            Timing.RunCoroutine(_MoveToGoal().CancelWith(gameObject));
         }
 
-        //Instantaneous movement
-        if (speed <= 0)
+        private Vector3 GetCharacterCellCenter()
         {
-            while (path.Count > 1)
+            return grid.GetCellCenterWorld(grid.WorldToCell(transform.position));
+        }
+        #endregion
+        #region Coroutines
+        private IEnumerator<float> _MoveToGoal()
+        {
+            Stack<Vector3Int> path = MapManager.Instance.Path;
+
+            if (path == null || path.Count == 0)
             {
-                path.Pop();
+                yield break;
             }
-            transform.position = grid.GetCellCenterWorld(path.Pop());
-            Timing.RunCoroutine(_reloadATB());
-            yield break;
-        }
 
-        Vector3 currentPos;
-        Vector3 nextPos;
-        float step, t;
-
-        isMoving = true;
-
-        valueATB = 0f;
-        UIManager.Instance.SetPlayerATB(valueATB);
-
-        //The character move from cell to cell.
-        while (path.Count > 0)
-        {
-            currentPos = GetCharacterCellCenter();
-            nextPos = grid.GetCellCenterWorld(path.Pop());
-
-
-            step = (speed / (currentPos - nextPos).magnitude) * Time.fixedDeltaTime;
-            t = 0;
-            while (t <= 1.0f)
+            //Instantaneous movement
+            if (speed <= 0)
             {
-                t += step; // Goes from 0 to 1, incrementing by step each time
-                transform.position = Vector3.Lerp(currentPos, nextPos, t);
-                UIManager.Instance.SetPlayerATBPosition(transform.position);
-                yield return Timing.WaitForOneFrame;         // Leave the routine and return here in the next frame
+                while (path.Count > 1)
+                {
+                    path.Pop();
+                }
+                transform.position = grid.GetCellCenterWorld(path.Pop());
+                Timing.RunCoroutine(_reloadATB());
+                yield break;
             }
-            transform.position = nextPos;
-            MapManager.Instance.ErasePathTileAt(nextPos);
-        }
 
-        Timing.RunCoroutine(_reloadATB());
-        isMoving = false;
-    }
+            Vector3 currentPos;
+            Vector3 nextPos;
+            float step, t;
 
-    private IEnumerator<float> _reloadATB()
-    {
-        float t = 0f;
-        while (t < durationATB)
-        {
-            t += Time.deltaTime;
-            valueATB = Mathf.Lerp(0, 1, t / durationATB);
+            isMoving = true;
+
+            valueATB = 0f;
             UIManager.Instance.SetPlayerATB(valueATB);
-            yield return Timing.WaitForOneFrame;
+
+            //The character move from cell to cell.
+            while (path.Count > 0)
+            {
+                currentPos = GetCharacterCellCenter();
+                nextPos = grid.GetCellCenterWorld(path.Pop());
+
+
+                step = (speed / (currentPos - nextPos).magnitude) * Time.fixedDeltaTime;
+                t = 0;
+                while (t <= 1.0f)
+                {
+                    t += step; // Goes from 0 to 1, incrementing by step each time
+                    transform.position = Vector3.Lerp(currentPos, nextPos, t);
+                    UIManager.Instance.SetPlayerATBPosition(transform.position, Vector3.up);
+                    yield return Timing.WaitForOneFrame;         // Leave the routine and return here in the next frame
+                }
+                transform.position = nextPos;
+                MapManager.Instance.ErasePathTileAt(nextPos);
+            }
+
+            Timing.RunCoroutine(_reloadATB());
+            isMoving = false;
         }
-        
-        valueATB = 1f;
-        UIManager.Instance.SetPlayerATB(valueATB);
+
+        private IEnumerator<float> _reloadATB()
+        {
+            float t = 0f;
+            while (t < durationATB)
+            {
+                t += Time.deltaTime;
+                valueATB = Mathf.Lerp(0, 1, t / durationATB);
+                UIManager.Instance.SetPlayerATB(valueATB);
+                yield return Timing.WaitForOneFrame;
+            }
+
+            valueATB = 1f;
+            UIManager.Instance.SetPlayerATB(valueATB);
+        }
+        #endregion
+
+
     }
-    #endregion
-
-
 }
