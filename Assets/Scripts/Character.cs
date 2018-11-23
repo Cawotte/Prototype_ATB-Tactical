@@ -29,6 +29,11 @@
             rightClickAction += MoveToGoal;
         }
 
+        private void Start()
+        {
+            UIManager.Instance.SetPlayerATBPosition(transform.position, Vector3.up);
+        }
+
         private void Update()
         {
             if (isMoving)
@@ -123,7 +128,8 @@
                     t += step; // Goes from 0 to 1, incrementing by step each time
                     transform.position = Vector3.Lerp(currentPos, nextPos, t);
                     UIManager.Instance.SetPlayerATBPosition(transform.position, Vector3.up);
-                    yield return Timing.WaitForOneFrame;         // Leave the routine and return here in the next frame
+                    yield return Timing.WaitForOneFrame;
+
                 }
                 transform.position = nextPos;
                 MapManager.Instance.ErasePathTileAt(nextPos);
@@ -148,7 +154,7 @@
             UIManager.Instance.SetPlayerATB(valueATB);
         }
         #endregion
-
+        
 
     }
 }
