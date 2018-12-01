@@ -19,6 +19,14 @@ public class TilemapPathfinder : MonoBehaviour {
         WriteType(tilemapGround.WorldToCell(worldPos));
     }
 
+    /// <summary>
+    /// Return the cell path from start to goal.
+    /// Return an empty path if start = goal.
+    /// Return null if there's no existing path.
+    /// </summary>
+    /// <param name="startPos"></param>
+    /// <param name="endPos"></param>
+    /// <returns></returns>
     public Stack<Vector3Int> GetPath(Vector3Int startPos, Vector3Int endPos)
     {
         Location start = new Location(startPos);

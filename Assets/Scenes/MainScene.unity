@@ -487,6 +487,7 @@ GameObject:
   m_Component:
   - component: {fileID: 662608268}
   - component: {fileID: 662608269}
+  - component: {fileID: 662608271}
   - component: {fileID: 662608270}
   m_Layer: 0
   m_Name: Character
@@ -562,11 +563,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 662608267}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0c35a7eedd9838340a7c8e9efba78937, type: 3}
+  m_Script: {fileID: 11500000, guid: 3c79a2429dc470a43881b7e2b288a861, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  grid: {fileID: 12474182}
+  characterATB: {fileID: 1613552577}
+  offsetATB: {x: 0, y: 0.5, z: 0}
+--- !u!114 &662608271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 662608267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e3e1113d2397b7468d979ab5c4d66c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   speed: 4
+  characUI: {fileID: 662608270}
+  atbGauge:
+    maxFillDuration: 2
 --- !u!1 &711552460
 GameObject:
   m_ObjectHideFlags: 0
@@ -4993,7 +5009,7 @@ GameObject:
   - component: {fileID: 1613552576}
   - component: {fileID: 1613552577}
   m_Layer: 5
-  m_Name: '[Slider] ATB Jauge'
+  m_Name: '[Slider] ATB Gauge Player1'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
