@@ -7,16 +7,16 @@
     using System.Collections.Generic;
     using UnityEngine;
     using MEC;
+    using Tactical.Map;
 
     public class Character : MonoBehaviour
     {
         
-        [SerializeField] protected float speed;
+        [SerializeField] protected float speed  = 4;
         [SerializeField] protected UICharacter characUI = null;
-        [SerializeField] protected ATBGauge atbGauge;
+        [SerializeField] protected ATBGauge atbGauge = null;
 
         protected Stack<Vector3Int> movePath = new Stack<Vector3Int>();
-
         protected bool isMoving = false;
 
         protected Vector3 Position

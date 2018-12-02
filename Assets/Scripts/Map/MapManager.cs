@@ -1,76 +1,117 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Tilemaps;
+﻿namespace Tactical.Map
+{
 
-public class MapManager : Singleton<MapManager> {
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.Tilemaps;
 
-    [SerializeField] private TilemapPathfinder pathfinder;
-    [SerializeField] private Grid grid;
-
-    [SerializeField] private GameObject character;
-    
-
-    public Grid Grid
+    public class MapManager : Singleton<MapManager>
     {
-        get
+
+        [SerializeField] private Grid grid;
+        [SerializeField] private List<Tilemap> tilemaps = new List<Tilemap>();
+
+        [SerializeField] private Tilemap tilemapPath;
+        [SerializeField] private Tile pathTile;
+
+
+        private TilemapPathfinder pathfinder;
+        private Map map;
+
+        public Map Map
         {
-            return grid;
+            get
+            {
+                return map;
+            }
         }
 
-        set
+        public Grid Grid
         {
-            grid = value;
-        }
-    }
-
-    public Stack<Vector3Int> FindAndGetPath(Vector3 startWorldPos, Vector3 goalWorldPos)
-    {
-        Vector3Int goalCellPos = Grid.WorldToCell(goalWorldPos);
-        Vector3Int startCellPos = Grid.WorldToCell(startWorldPos);
-
-        return pathfinder.GetPath(startCellPos, goalCellPos);
-    }
-
-    public Stack<Vector3> GetPathInCellCenter(Stack<Vector3Int> path)
-    {
-        if (path == null) return null;
-
-        Stack<Vector3Int> reversedPath = new Stack<Vector3Int>(path);
-        Stack<Vector3> pathWithCenter = new Stack<Vector3>();
-
-        while (reversedPath.Count > 0 )
-        {
-            pathWithCenter.Push(GetCellCenterWorld(reversedPath.Pop()));
+            get
+            {
+                return grid;
+            }
         }
 
-        return pathWithCenter;
-    }
 
-    /// <summary>
-    /// Get the world center of the cell at given coordinates
-    /// </summary>
-    /// <param name="cellPos"></param>
-    /// <returns></returns>
-    public Vector3 GetCellCenterWorld(Vector3Int cellPos)
-    {
-        return grid.GetCellCenterWorld(cellPos);
-    }
-    
-    public void DrawPath(Stack<Vector3Int> path)
-    {
-        pathfinder.DrawPath(path);
-    }
+        private void Awake()
+        {
+            map = new Map(tilemaps);
+            pathfinder = new TilemapPathfinder(map);
+        }
 
-    public void ErasePath()
-    {
-        pathfinder.ErasePath();
-    }
 
-    public void ErasePathTileAt(Vector3 worldPos)
-    {
-        pathfinder.ErasePathTileAt(Grid.WorldToCell(worldPos));
-    }
+        #region Get Cells
 
+        public TileFullData GetCell(Vector3 worldPos)
+        {
+            return map[grid.WorldToCell(worldPos)];
+        }
+        
+        /// <summary>
+        /// Get the world center of the cell at given coordinates
+        /// </summary>
+        /// <param name="cellPos"></param>
+        /// <returns></returns>
+        public Vector3 GetCellCenterWorld(Vector3Int cellPos)
+        {
+            return grid.GetCellCenterWorld(cellPos);
+        }
+        #endregion
+
+        #region Pathfinding 
+        public Stack<Vector3Int> FindAndGetPath(Vector3 startWorldPos, Vector3 goalWorldPos)
+        {
+            Vector3Int goalCellPos = Grid.WorldToCell(goalWorldPos);
+            Vector3Int startCellPos = Grid.WorldToCell(startWorldPos);
+
+            return pathfinder.GetPath(startCellPos, goalCellPos);
+        }
+
+        public Stack<Vector3> GetPathInCellCenter(Stack<Vector3Int> path)
+        {
+            if (path == null) return null;
+
+            Stack<Vector3Int> reversedPath = new Stack<Vector3Int>(path);
+            Stack<Vector3> pathWithCenter = new Stack<Vector3>();
+
+            while (reversedPath.Count > 0)
+            {
+                pathWithCenter.Push(GetCellCenterWorld(reversedPath.Pop()));
+            }
+
+            return pathWithCenter;
+        }
+
+        public void DrawPath(Stack<Vector3Int> path)
+        {
+            if (path == null)
+            {
+                return;
+            }
+            Stack<Vector3Int> pathCopy = new Stack<Vector3Int>(new Stack<Vector3Int>(path)); ;
+            tilemapPath.ClearAllTiles();
+            while (path != null && pathCopy.Count > 0)
+            {
+                tilemapPath.SetTile(pathCopy.Pop(), pathTile);
+            }
+        }
+
+        public void ErasePath()
+        {
+            tilemapPath.ClearAllTiles();
+        }
+
+        public void ErasePathTileAt(Vector3 worldPos)
+        {
+            tilemapPath.SetTile(Grid.WorldToCell(worldPos), null);
+        }
+
+        #endregion
+
+
+    }
 
 }
