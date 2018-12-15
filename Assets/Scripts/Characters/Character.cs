@@ -16,7 +16,7 @@
         [SerializeField] protected UICharacter characUI = null;
         [SerializeField] protected ATBGauge atbGauge = null;
 
-        protected Stack<Map.Tile> path = new Stack<Map.Tile>();
+        [SerializeField] protected Stack<Map.Tile> path = new Stack<Map.Tile>();
         protected bool isMoving = false;
 
         protected Vector3 Position
@@ -55,6 +55,7 @@
         #endregion
 
         #region Coroutines
+
         private IEnumerator<float> _MoveAlongPath()
         {
             if (path == null || path.Count == 0)
@@ -82,19 +83,21 @@
 
             isMoving = true;
 
+            path.Pop();
+
             //The character move from cell to cell.
             while (path.Count > 0)
             {
                 nextTile = path.Pop();
                 nextPos = nextTile.CenterWorld;
 
-                if (nextPos == Position)
+
+                while (Position != nextPos)
                 {
-                    continue;
+                    yield return Timing.WaitForOneFrame;
+                    Position = Vector3.MoveTowards(Position, nextPos, speed * Time.fixedDeltaTime);
                 }
 
-                yield return Timing.WaitUntilDone(Timing.RunCoroutine(_MoveTo(nextPos)));
-                
                 MapManager.Instance.Painter.ErasePathTileAt(nextTile.CellPos);
             }
 
@@ -104,9 +107,7 @@
 
         private IEnumerator<float> _MoveTo(Vector3 goalPos)
         {
-            bool wasAlreadyMoving = isMoving;
-            isMoving = true;
-
+            /*
             float t = 0f;
             float step = (speed / (Position - goalPos).magnitude) * Time.fixedDeltaTime;
 
@@ -116,9 +117,14 @@
                 Position = Vector3.Lerp(Position, goalPos, t);
                 yield return Timing.WaitForOneFrame;
             }
-            Position = goalPos;
+            Position = goalPos; */
 
-            isMoving = wasAlreadyMoving;
+            while (Position != goalPos)
+            {
+                yield return Timing.WaitForOneFrame;
+                Position = Vector3.MoveTowards(Position, goalPos, speed * Time.fixedDeltaTime);
+            }
+            
         }
         
         #endregion

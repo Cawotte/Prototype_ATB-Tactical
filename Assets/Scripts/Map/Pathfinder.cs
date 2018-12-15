@@ -21,7 +21,7 @@
 
             Stack<Map.Tile> tilePath = GetTilePath(mapGrid.GetTileIndexAt(startWorldPos), mapGrid.GetTileIndexAt(goalWorldPos));
 
-            return Pathfinder.GetWorldPath(tilePath);
+            return GetWorldPath(tilePath);
         }
 
         public Stack<Map.Tile> GetTilePath(Vector3 startWorldPos, Vector3 goalWorldPos)
@@ -49,6 +49,11 @@
             if (start.Equals(goal))
             {
                 return new Stack<Map.Tile>(); //return empty path.
+            }
+            if (!mapGrid[endGridPos].IsWalkable())
+            {
+                Debug.Log("Goal not walkable !");
+                return new Stack<Map.Tile>();
             }
 
             //Keep tracks of the processed locations and unprocessed neighbors. 
