@@ -1,121 +1,283 @@
 ﻿
 namespace Tactical.Map
 {
-
     using System.Collections;
     using System.Collections.Generic;
     using UnityEngine;
+    using System;
     using UnityEngine.Tilemaps;
-    using System.Linq;
 
-    [System.Serializable]
-    public class Map
-    {
+    [Serializable]
+    public class Map {
+
+        private Grid grid;
+
+        //World Bounds of the map
+        private Bounds bounds;
+        //Cell Bounds of the map (Grid ref)
+        private BoundsInt cellBounds;
+
+        private Tilemap[] tilemaps;
         
-        private List<TileFullData> map = new List<TileFullData>();
-        private BoundsInt bounds = new BoundsInt();
+        [SerializeField]
+        private Serializable2DArray<Tile> mapGrid;
 
-        public TileFullData this[int x, int y, int z]
+        public Grid Grid
         {
             get
             {
-                return map.SingleOrDefault( cell => 
-                    cell.CellPos.x == x &&
-                    cell.CellPos.y == y &&
-                    cell.CellPos.z == z);
+                return grid;
             }
         }
 
-        public TileFullData this[int x, int y]
+        public Tile this[int i, int j]
         {
             get
             {
-                return this[x, y, 0];
+                return mapGrid[i, j];
+            }
+            set
+            {
+                mapGrid[i, j] = value;
             }
         }
 
-        public TileFullData this[Vector3Int cellPos]
+        public Tile this[Vector2Int gridPos]
         {
             get
             {
-                return this[cellPos.x, cellPos.y, cellPos.z];
+                return this[gridPos.x, gridPos.y];
+            }
+            set
+            {
+                this[gridPos.x, gridPos.y] = value;
             }
         }
 
-        public TileFullData this[Vector2Int cellPos]
+        public int Width
         {
             get
             {
-                return this[cellPos.x, cellPos.y, 0];
+                return mapGrid.Width;
             }
         }
 
-        public Map(List<Tilemap> tilemaps)
+        public int Height
         {
-            LoadMap(tilemaps);
+            get
+            {
+                return mapGrid.Height;
+            }
+
         }
 
-        public void LoadMap(List<Tilemap> tilemaps)
+        public Bounds Bounds { get => bounds; }
+        public BoundsInt CellBounds { get => cellBounds;  }
+
+        public Map(Grid grid, Tilemap[] tilemaps)
         {
-            //Get max bounds
-            bounds = new BoundsInt(Vector3Int.zero, Vector3Int.zero);
-            Vector3Int minBounds = bounds.min;
-            Vector3Int maxBounds = bounds.max;
+            this.grid = grid;
+            this.tilemaps = tilemaps;
+
+            LoadMap();
+        }
+
+       
+        /// <summary>
+        /// Return the tile at the given cell position
+        /// </summary>
+        /// <param name="cellPos"></param>
+        /// <returns></returns>
+        public Tile GetTileAt(Vector3Int cellPos)
+        {
+            //Else calculate its grid coordinate from the cell ones.
+            //Vector3Int gridPos = cellPos - mapGrid[0, 0].CellPos;
+            Vector2Int indexPos = GetTileIndexAt(cellPos);
+
+            
+            if (!IsInBounds(indexPos))
+            {
+                return null;
+            } 
+            return this[indexPos];
+        }
+
+        /// <summary>
+        /// Return the tile at the given world position.
+        /// </summary>
+        /// <param name="worldPos"></param>
+        /// <returns></returns>
+        public Tile GetTileAt(Vector3 worldPos)
+        {
+            return GetTileAt(grid.WorldToCell(worldPos));
+        }
+
+        /// <summary>
+        /// Return the tile (i,j) index (map[i,j]) at the given cell pos.
+        /// </summary>
+        /// <param name="cellPos"></param>
+        /// <returns></returns>
+        public Vector2Int GetTileIndexAt(Vector3Int cellPos)
+        {
+            Vector3Int index3 = cellPos - cellBounds.min;
+            return new Vector2Int(index3.x, index3.y);
+        }
+
+        /// <summary>
+        /// Return the tile (i,j) index (tile = map[i,j]) at the given world pos.
+        /// </summary>
+        /// <param name="worldPos"></param>
+        /// <returns></returns>
+        public Vector2Int GetTileIndexAt(Vector3 worldPos)
+        {
+            return GetTileIndexAt(grid.WorldToCell(worldPos));
+        }
+
+        #region Boolean Methods
+        /// <summary>
+        /// Return true if the given grid coordinate is within cell bounds.
+        /// </summary>
+        /// <param name="gridPos"></param>
+        /// <returns></returns>
+        public bool IsInBounds(Vector2Int gridPos)
+        {
+            return gridPos.x >= 0 && gridPos.y >= 0
+                && gridPos.x < Width && gridPos.y < Height;
+        }
+
+        public bool IsInBounds(Vector3 worldPos)
+        {
+            return IsInBounds(GetTileIndexAt(worldPos));
+        }
+
+
+        #endregion
+
+        #region Private Methods
+        /// <summary>
+        /// Return the tile at the given CellPos by reading tilemaps.
+        /// </summary>
+        /// <param name="cellPos"></param>
+        /// <returns></returns>
+        private Tile GetTileFromTilemaps(Vector3Int cellPos)
+        {
+            TilemapProperties tilemapProperties = null;
+            Tile.TileType type = Tile.TileType.None;
+
+            //for each tilemaps, read its content
             foreach (Tilemap tilemap in tilemaps)
             {
-                minBounds = Vector3Int.Min(bounds.min, tilemap.cellBounds.min);
-                maxBounds = Vector3Int.Max(bounds.max, tilemap.cellBounds.max);
-            }
-            bounds.SetMinMax(minBounds, maxBounds);
+                tilemapProperties = tilemap.GetComponent<TilemapProperties>();
 
-            //init
-            map = new List<TileFullData>();
-            TileFullData tileData;
-
-            //To iterate through all positions in the Bounds.
-            BoundsInt.PositionEnumerator cellEnumerator = bounds.allPositionsWithin;
-            cellEnumerator.Reset();
-
-            //For all positions in cellEnumerator, we get the tile data and add it to the map.
-            do
-            {
-                TilemapProperties tilemapProperties;
-                bool isWater = false;
-                bool isGround = false;
-                bool isObstacle = false;
-
-                foreach (Tilemap tilemap in tilemaps)
+                //If it's not a valid tilemap, we skip it.
+                if (tilemapProperties == null)
                 {
-                    tilemapProperties = tilemap.GetComponent<TilemapProperties>();
-                    if ( tilemapProperties == null )
-                    {
-                        continue;
-                    }
-                    if (tilemapProperties.Type == Type.Water && tilemap.HasTile(cellEnumerator.Current))
-                    {
-                        isWater = true;
-                    }
-                    if (tilemapProperties.Type == Type.Ground && tilemap.HasTile(cellEnumerator.Current))
-                    {
-                        isGround = true;
-                    }
-                    if (tilemapProperties.Type == Type.Obstacle && tilemap.HasTile(cellEnumerator.Current))
-                    {
-                        isObstacle = true;
-                    }
+                    continue;
                 }
 
-                tileData = new TileFullData(
-                    cellEnumerator.Current,
-                    isWater,
-                    isGround,
-                    isObstacle
-                    );
+                //Remember the highest rated type
+                if (tilemap.HasTile(cellPos) && tilemapProperties.Type > type)
+                {
+                    type = tilemapProperties.Type;
+                }
+            }
 
-                map.Add(tileData);
+            Tile tile = new Tile(
+                cellPos,
+                grid.GetCellCenterWorld(cellPos),
+                type);
 
-            } while (cellEnumerator.MoveNext()); //while there's a next pos
+            return tile;
+        }
 
+        /// <summary>
+        /// Initialize the Map by reading tilemaps.
+        /// </summary>
+        private void LoadMap()
+        {
+            //Get Cell Bounds and world bounds
+            this.bounds = new Bounds();
+            this.cellBounds = new BoundsInt();
+            //get full world bounds
+            foreach (Tilemap tilemap in tilemaps)
+            {
+                bounds.Encapsulate(tilemap.localBounds);
+            }
+            //Get full cell bounds
+            cellBounds.SetMinMax(grid.WorldToCell(bounds.min), grid.WorldToCell(bounds.max));
+
+            DebugInfo();
+
+            //We initialize a grid
+            this.mapGrid = new Serializable2DArray<Tile>(cellBounds.size.x, cellBounds.size.y);
+
+            Vector3Int cellPos = Vector3Int.zero;
+            int xIndex;
+            int yIndex = 0;
+            for (int j = cellBounds.min.y; j < cellBounds.max.y; j++)
+            {
+                xIndex = 0;
+                for (int i = cellBounds.min.x; i < cellBounds.max.x; i++)
+                {
+                    cellPos.x = i;
+                    cellPos.y = j;
+                    mapGrid[xIndex, yIndex] = GetTileFromTilemaps(cellPos);
+                    xIndex++;
+                }
+                yIndex++;
+            } 
+            
+        }
+        #endregion
+
+        public void DebugInfo()
+        {
+            string txt = "";
+            txt += "CellBounds.min : " + cellBounds.min;
+            txt += "\nCellBounds.max : " + cellBounds.max;
+            txt += "\nCellBounds size : " + cellBounds.size;
+
+            Debug.Log(txt);
+        }
+
+        /// <summary>
+        /// Tile informations.
+        /// </summary>
+        [Serializable]
+        public class Tile
+        {
+            public Vector3Int CellPos;
+            public Vector3 CenterWorld;
+            public TileType Type;
+
+            public Tile(Vector3Int cellPos, Vector3 cellCenter, TileType type)
+            {
+                this.CellPos = cellPos;
+                this.CenterWorld = cellCenter;
+                this.Type = type;
+            }
+
+            public bool IsWalkable()
+            {
+                return Type == TileType.Ground;
+            }
+
+            public override string ToString()
+            {
+                string txt = "";
+                txt += "\nCellPos : " + CellPos;
+                txt += "\nCenter in World : " + CenterWorld;
+                txt += "\nType : " + Type;
+                return txt;
+            }
+
+            public enum TileType
+            {
+                None = 0,
+                Ground = 1,
+                Obstacle = 2
+            }
+            
         }
     }
 }

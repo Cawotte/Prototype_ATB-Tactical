@@ -14,7 +14,7 @@
 
         [SerializeField] private Tilemap tilemapPath;
         */
-        private Map map;
+        private MapOld map;
 
         //[SerializeField] private Tile pathTile;
 
@@ -26,7 +26,7 @@
             WriteType(tilemapGround.WorldToCell(worldPos));
         } */
 
-        public TilemapPathfinder(Map map)
+        public TilemapPathfinder(MapOld map)
         {
             this.map = map;
         }

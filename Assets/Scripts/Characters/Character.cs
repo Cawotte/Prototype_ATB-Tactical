@@ -16,7 +16,7 @@
         [SerializeField] protected UICharacter characUI = null;
         [SerializeField] protected ATBGauge atbGauge = null;
 
-        protected Stack<Vector3Int> movePath = new Stack<Vector3Int>();
+        protected Stack<Map.Tile> path = new Stack<Map.Tile>();
         protected bool isMoving = false;
 
         protected Vector3 Position
@@ -42,21 +42,10 @@
         }
         
 
-        protected void GetAndDrawPathTo(Vector3 goalWorldPos)
-        {
-            MapManager.Instance.ErasePath();
-
-            movePath = MapManager.Instance.FindAndGetPath(Position, goalWorldPos);
-            if (movePath != null && movePath.Count > 0)
-            {
-                MapManager.Instance.DrawPath(movePath);
-            }
-        }
-
         #region Private Methods
         protected void MoveToGoal()
         {
-            Timing.RunCoroutine(_MoveToGoal().CancelWith(gameObject));
+            Timing.RunCoroutine(_MoveAlongPath().CancelWith(gameObject));
         }
 
         private Vector3 GetCharacterCellCenter()
@@ -66,16 +55,13 @@
         #endregion
 
         #region Coroutines
-        private IEnumerator<float> _MoveToGoal()
+        private IEnumerator<float> _MoveAlongPath()
         {
-
-            if (movePath == null || movePath.Count == 0)
+            if (path == null || path.Count == 0)
             {
                 yield break;
             }
-
-            Stack<Vector3> path = MapManager.Instance.GetPathInCellCenter(movePath);
-
+            
             atbGauge.Consume(100);
 
             //Instantaneous movement
@@ -85,40 +71,54 @@
                 {
                     path.Pop();
                 }
-                Position = path.Pop();
+                Position = path.Pop().CenterWorld;
                 atbGauge.StartReloading();
-                movePath = null;
                 yield break;
             }
 
-            Vector3 currentPos = GetCharacterCellCenter();
-            Vector3 nextCellPos;
-            float step, t;
+            // currentPos = Position;
+            Vector3 nextPos;
+            Map.Tile nextTile;
 
             isMoving = true;
 
             //The character move from cell to cell.
             while (path.Count > 0)
             {
-                nextCellPos = path.Pop();
+                nextTile = path.Pop();
+                nextPos = nextTile.CenterWorld;
 
-                //Step allow to scale timer on speed.
-                step = (speed / (currentPos - nextCellPos).magnitude) * Time.fixedDeltaTime;
-                t = 0;
-                while (t <= 1.0f)
+                if (nextPos == Position)
                 {
-                    t += step; // Goes from 0 to 1, incrementing by step each time
-                    Position = Vector3.Lerp(currentPos, nextCellPos, t);
-                    yield return Timing.WaitForOneFrame;
+                    continue;
                 }
 
-                currentPos = Position = nextCellPos;
-                MapManager.Instance.ErasePathTileAt(nextCellPos);
+                yield return Timing.WaitUntilDone(Timing.RunCoroutine(_MoveTo(nextPos)));
+                
+                MapManager.Instance.Painter.ErasePathTileAt(nextTile.CellPos);
             }
 
             atbGauge.StartReloading();
-            movePath = null;
             isMoving = false;
+        }
+
+        private IEnumerator<float> _MoveTo(Vector3 goalPos)
+        {
+            bool wasAlreadyMoving = isMoving;
+            isMoving = true;
+
+            float t = 0f;
+            float step = (speed / (Position - goalPos).magnitude) * Time.fixedDeltaTime;
+
+            while (t <= 1.0f)
+            {
+                t += step; // Goes from 0 to 1, incrementing by step each time
+                Position = Vector3.Lerp(Position, goalPos, t);
+                yield return Timing.WaitForOneFrame;
+            }
+            Position = goalPos;
+
+            isMoving = wasAlreadyMoving;
         }
         
         #endregion

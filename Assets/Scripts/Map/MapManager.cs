@@ -10,13 +10,12 @@
     {
 
         [SerializeField] private Grid grid;
-        [SerializeField] private List<Tilemap> tilemaps = new List<Tilemap>();
+        [SerializeField] private GameObject tilemapsParent;
 
-        [SerializeField] private Tilemap tilemapPath;
-        [SerializeField] private Tile pathTile;
+        [SerializeField] private TilemapPainter painter;
 
 
-        private TilemapPathfinder pathfinder;
+        private Pathfinder pathfinder;
         private Map map;
 
         public Map Map
@@ -35,33 +34,33 @@
             }
         }
 
+        public Pathfinder Pathfinder
+        {
+            get
+            {
+                return pathfinder;
+            }
+        }
+
+        public TilemapPainter Painter
+        {
+            get
+            {
+                return painter;
+            }
+        }
 
         private void Awake()
         {
-            map = new Map(tilemaps);
-            pathfinder = new TilemapPathfinder(map);
+            
+            map = new Map(grid, tilemapsParent.GetComponentsInChildren<Tilemap>());
+            pathfinder = new Pathfinder(map);
         }
 
 
-        #region Get Cells
-
-        public TileFullData GetCell(Vector3 worldPos)
-        {
-            return map[grid.WorldToCell(worldPos)];
-        }
-        
-        /// <summary>
-        /// Get the world center of the cell at given coordinates
-        /// </summary>
-        /// <param name="cellPos"></param>
-        /// <returns></returns>
-        public Vector3 GetCellCenterWorld(Vector3Int cellPos)
-        {
-            return grid.GetCellCenterWorld(cellPos);
-        }
-        #endregion
 
         #region Pathfinding 
+        /*
         public Stack<Vector3Int> FindAndGetPath(Vector3 startWorldPos, Vector3 goalWorldPos)
         {
             Vector3Int goalCellPos = Grid.WorldToCell(goalWorldPos);
@@ -83,8 +82,8 @@
             }
 
             return pathWithCenter;
-        }
-
+        } */
+        /*
         public void DrawPath(Stack<Vector3Int> path)
         {
             if (path == null)
@@ -107,7 +106,7 @@
         public void ErasePathTileAt(Vector3 worldPos)
         {
             tilemapPath.SetTile(Grid.WorldToCell(worldPos), null);
-        }
+        } */
 
         #endregion
 

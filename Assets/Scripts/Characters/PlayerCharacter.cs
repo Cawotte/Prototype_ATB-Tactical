@@ -4,6 +4,7 @@
 
     using System.Collections;
     using System.Collections.Generic;
+    using Tactical.Map;
     using UnityEngine;
 
     public class PlayerCharacter : Character
@@ -22,7 +23,8 @@
             if (Input.GetMouseButtonDown(0))
             {
                 clickedWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                GetAndDrawPathTo(clickedWorldPos);
+                path = MapManager.Instance.Pathfinder.GetTilePath(Position, clickedWorldPos);
+                MapManager.Instance.Painter.DrawPath(path);
             }
             if (Input.GetMouseButtonDown(1))
             {

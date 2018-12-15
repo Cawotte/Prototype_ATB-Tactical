@@ -6,20 +6,15 @@
 
     public class TilemapProperties : MonoBehaviour
     {
-        [SerializeField] private Type type;
+        [SerializeField] private Map.Tile.TileType type;
 
-        public Type Type
+        public Map.Tile.TileType Type
         {
             get
             {
                 return type;
             }
         }
-    }
-
-    public enum Type
-    {
-        Water, Ground, Obstacle, None
     }
 }
 

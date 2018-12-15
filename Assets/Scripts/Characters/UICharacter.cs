@@ -4,19 +4,14 @@
     using System.Collections.Generic;
     using UnityEngine;
     using UnityEngine.UI;
+    using System;
 
-    public class UICharacter : MonoBehaviour
+    [Serializable]
+    public class UICharacter
     {
 
         [SerializeField] private Slider characterATB;
         [SerializeField] private Vector2 offsetATB;
-
-        private Character character;
-
-        private void Awake()
-        {
-            character = GetComponent<Character>();
-        }
 
         public void SetATBValue(float value)
         {
@@ -26,8 +21,9 @@
         public void SetATBPosition(Vector3 worldPos)
         {
             Vector3 offset = offsetATB;
-            Vector3 pos = Camera.main.WorldToScreenPoint(worldPos + offset);
-            characterATB.GetComponent<RectTransform>().anchoredPosition = pos;
+            characterATB.transform.position = worldPos + offset;
+            //Vector3 pos = Camera.main.WorldToScreenPoint(worldPos + offset);
+            //characterATB.GetComponent<RectTransform>().anchoredPosition = pos;
         }
     }
 }
