@@ -19,12 +19,12 @@
         public Stack<Vector3> GetWorldPath(Vector3 startWorldPos, Vector3 goalWorldPos)
         {
 
-            Stack<Map.Tile> tilePath = GetTilePath(mapGrid.GetTileIndexAt(startWorldPos), mapGrid.GetTileIndexAt(goalWorldPos));
+            Stack<MapTile> tilePath = GetTilePath(mapGrid.GetTileIndexAt(startWorldPos), mapGrid.GetTileIndexAt(goalWorldPos));
 
             return GetWorldPath(tilePath);
         }
 
-        public Stack<Map.Tile> GetTilePath(Vector3 startWorldPos, Vector3 goalWorldPos)
+        public Stack<MapTile> GetTilePath(Vector3 startWorldPos, Vector3 goalWorldPos)
         {
 
             return GetTilePath(mapGrid.GetTileIndexAt(startWorldPos), mapGrid.GetTileIndexAt(goalWorldPos));
@@ -39,7 +39,7 @@
         /// <param name="startPos"></param>
         /// <param name="endPos"></param>
         /// <returns></returns>
-        public Stack<Map.Tile> GetTilePath(Vector2Int startGridPos, Vector2Int endGridPos)
+        public Stack<MapTile> GetTilePath(Vector2Int startGridPos, Vector2Int endGridPos)
         {
             StarCell start = new StarCell(startGridPos);
             StarCell goal = new StarCell(endGridPos);
@@ -48,12 +48,12 @@
 
             if (start.Equals(goal))
             {
-                return new Stack<Map.Tile>(); //return empty path.
+                return new Stack<MapTile>(); //return empty path.
             }
             if (!mapGrid[endGridPos].IsWalkable())
             {
                 Debug.Log("Goal not walkable !");
-                return new Stack<Map.Tile>();
+                return new Stack<MapTile>();
             }
 
             //Keep tracks of the processed locations and unprocessed neighbors. 
@@ -123,7 +123,7 @@
             }
 
             Debug.Log("No path or flood ! Flood count : " + nbIter);
-            return new Stack<Map.Tile>();
+            return new Stack<MapTile>();
         }
 
         #region private Methods
@@ -146,9 +146,9 @@
             return neighbors;
         }
 
-        private Stack<Map.Tile> BuildPathFromTile(PathCell goalCell)
+        private Stack<MapTile> BuildPathFromTile(PathCell goalCell)
         {
-            Stack<Map.Tile> pathTile = new Stack<Map.Tile>();
+            Stack<MapTile> pathTile = new Stack<MapTile>();
             PathCell current = goalCell;
 
             //Bug if current == null at start
@@ -171,12 +171,12 @@
         }
 
         #region Static Methods
-        public static Stack<Vector3> GetWorldPath(Stack<Map.Tile> path)
+        public static Stack<Vector3> GetWorldPath(Stack<MapTile> path)
         {
             Stack<Vector3> worldPath = new Stack<Vector3>();
             
             //Build World path from tile path
-            Stack<Map.Tile> copyPath = new Stack<Map.Tile>(path); //We reverse the pile, cuz it's gonna be re-reversed
+            Stack<MapTile> copyPath = new Stack<MapTile>(path); //We reverse the pile, cuz it's gonna be re-reversed
             while (copyPath.Count > 0)
             {
                 worldPath.Push(copyPath.Pop().CenterWorld);
@@ -185,12 +185,12 @@
             return worldPath;
         }
 
-        public static Stack<Vector3Int> GetCellPath(Stack<Map.Tile> path)
+        public static Stack<Vector3Int> GetCellPath(Stack<MapTile> path)
         {
             Stack<Vector3Int> cellPath = new Stack<Vector3Int>();
 
             //Build World path from tile path
-            Stack<Map.Tile> copyPath = new Stack<Map.Tile>(path); //We reverse the pile, cuz it's gonna be re-reversed
+            Stack<MapTile> copyPath = new Stack<MapTile>(path); //We reverse the pile, cuz it's gonna be re-reversed
             while (copyPath.Count > 0)
             {
                 cellPath.Push(copyPath.Pop().CellPos);

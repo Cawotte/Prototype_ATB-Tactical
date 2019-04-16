@@ -6,9 +6,9 @@
 
     public class TilemapProperties : MonoBehaviour
     {
-        [SerializeField] private Map.Tile.TileType type;
+        [SerializeField] private MapTile.TileType type;
 
-        public Map.Tile.TileType Type
+        public MapTile.TileType Type
         {
             get
             {

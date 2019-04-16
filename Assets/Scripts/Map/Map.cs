@@ -20,8 +20,9 @@ namespace Tactical.Map
         private Tilemap[] tilemaps;
         
         [SerializeField]
-        private Serializable2DArray<Tile> mapGrid;
+        private Serializable2DArray<MapTile> mapGrid;
 
+        #region Properties
         public Grid Grid
         {
             get
@@ -30,7 +31,7 @@ namespace Tactical.Map
             }
         }
 
-        public Tile this[int i, int j]
+        public MapTile this[int i, int j]
         {
             get
             {
@@ -42,7 +43,7 @@ namespace Tactical.Map
             }
         }
 
-        public Tile this[Vector2Int gridPos]
+        public MapTile this[Vector2Int gridPos]
         {
             get
             {
@@ -74,6 +75,8 @@ namespace Tactical.Map
         public Bounds Bounds { get => bounds; }
         public BoundsInt CellBounds { get => cellBounds;  }
 
+        #endregion
+
         public Map(Grid grid, Tilemap[] tilemaps)
         {
             this.grid = grid;
@@ -82,13 +85,13 @@ namespace Tactical.Map
             LoadMap();
         }
 
-       
+        #region Tiles getter
         /// <summary>
         /// Return the tile at the given cell position
         /// </summary>
         /// <param name="cellPos"></param>
         /// <returns></returns>
-        public Tile GetTileAt(Vector3Int cellPos)
+        public MapTile GetTileAt(Vector3Int cellPos)
         {
             //Else calculate its grid coordinate from the cell ones.
             //Vector3Int gridPos = cellPos - mapGrid[0, 0].CellPos;
@@ -107,7 +110,7 @@ namespace Tactical.Map
         /// </summary>
         /// <param name="worldPos"></param>
         /// <returns></returns>
-        public Tile GetTileAt(Vector3 worldPos)
+        public MapTile GetTileAt(Vector3 worldPos)
         {
             return GetTileAt(grid.WorldToCell(worldPos));
         }
@@ -132,6 +135,7 @@ namespace Tactical.Map
         {
             return GetTileIndexAt(grid.WorldToCell(worldPos));
         }
+        #endregion
 
         #region Boolean Methods
         /// <summary>
@@ -159,10 +163,10 @@ namespace Tactical.Map
         /// </summary>
         /// <param name="cellPos"></param>
         /// <returns></returns>
-        private Tile GetTileFromTilemaps(Vector3Int cellPos)
+        private MapTile GetTileFromTilemaps(Vector3Int cellPos)
         {
             TilemapProperties tilemapProperties = null;
-            Tile.TileType type = Tile.TileType.None;
+            MapTile.TileType type = MapTile.TileType.None;
 
             //for each tilemaps, read its content
             foreach (Tilemap tilemap in tilemaps)
@@ -182,7 +186,7 @@ namespace Tactical.Map
                 }
             }
 
-            Tile tile = new Tile(
+            MapTile tile = new MapTile(
                 cellPos,
                 grid.GetCellCenterWorld(cellPos),
                 type);
@@ -209,7 +213,7 @@ namespace Tactical.Map
             DebugInfo();
 
             //We initialize a grid
-            this.mapGrid = new Serializable2DArray<Tile>(cellBounds.size.x, cellBounds.size.y);
+            this.mapGrid = new Serializable2DArray<MapTile>(cellBounds.size.x, cellBounds.size.y);
 
             Vector3Int cellPos = Vector3Int.zero;
             int xIndex;
@@ -240,44 +244,5 @@ namespace Tactical.Map
             Debug.Log(txt);
         }
 
-        /// <summary>
-        /// Tile informations.
-        /// </summary>
-        [Serializable]
-        public class Tile
-        {
-            public Vector3Int CellPos;
-            public Vector3 CenterWorld;
-            public TileType Type;
-
-            public Tile(Vector3Int cellPos, Vector3 cellCenter, TileType type)
-            {
-                this.CellPos = cellPos;
-                this.CenterWorld = cellCenter;
-                this.Type = type;
-            }
-
-            public bool IsWalkable()
-            {
-                return Type == TileType.Ground;
-            }
-
-            public override string ToString()
-            {
-                string txt = "";
-                txt += "\nCellPos : " + CellPos;
-                txt += "\nCenter in World : " + CenterWorld;
-                txt += "\nType : " + Type;
-                return txt;
-            }
-
-            public enum TileType
-            {
-                None = 0,
-                Ground = 1,
-                Obstacle = 2
-            }
-            
-        }
     }
 }

@@ -18,7 +18,7 @@
             this.grid = grid;
         }
 
-        public void DrawPath(Stack<Map.Tile> path)
+        public void DrawPath(Stack<MapTile> path)
         {
             if (path == null)
             {

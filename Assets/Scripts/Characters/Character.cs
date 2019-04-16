@@ -14,12 +14,12 @@
         
         [SerializeField] protected float speed  = 4;
         [SerializeField] protected UICharacter characUI = null;
-        [SerializeField] protected ATBGauge atbGauge = null;
+        [SerializeField] private ATBGauge atbGauge = null;
 
-        [SerializeField] protected Stack<Map.Tile> path = new Stack<Map.Tile>();
-        protected bool isMoving = false;
+        [SerializeField] private Stack<MapTile> path = new Stack<MapTile>();
+        private bool isMoving = false;
 
-        protected Vector3 Position
+        public Vector3 Position
         {
             get
             {
@@ -33,6 +33,9 @@
             }
         }
 
+        public Stack<MapTile> Path { get => path; set => path = value; }
+        public bool IsMoving { get => isMoving; }
+        public ATBGauge AtbGauge { get => atbGauge; set => atbGauge = value; }
 
         private void Start()
         {
@@ -40,17 +43,22 @@
             atbGauge.OnValueChange += characUI.SetATBValue;
             atbGauge.ResetValue();
         }
-        
 
-        #region Private Methods
-        protected void MoveToGoal()
+
+        public bool HasPath()
+        {
+            return path != null && path.Count != 0;
+        }
+        public void MoveToGoal()
         {
             Timing.RunCoroutine(_MoveAlongPath().CancelWith(gameObject));
         }
+        #region Private Methods
+
 
         private Vector3 GetCharacterCellCenter()
         {
-            return MapManager.Instance.Grid.GetCellCenterWorld(MapManager.Instance.Grid.WorldToCell(transform.position));
+            return LevelManager.Instance.Grid.GetCellCenterWorld(LevelManager.Instance.Grid.WorldToCell(transform.position));
         }
         #endregion
 
@@ -79,7 +87,7 @@
 
             // currentPos = Position;
             Vector3 nextPos;
-            Map.Tile nextTile;
+            MapTile nextTile;
 
             isMoving = true;
 
@@ -98,7 +106,7 @@
                     Position = Vector3.MoveTowards(Position, nextPos, speed * Time.fixedDeltaTime);
                 }
 
-                MapManager.Instance.Painter.ErasePathTileAt(nextTile.CellPos);
+                LevelManager.Instance.Painter.ErasePathTileAt(nextTile.CellPos);
             }
 
             atbGauge.StartReloading();
@@ -107,17 +115,6 @@
 
         private IEnumerator<float> _MoveTo(Vector3 goalPos)
         {
-            /*
-            float t = 0f;
-            float step = (speed / (Position - goalPos).magnitude) * Time.fixedDeltaTime;
-
-            while (t <= 1.0f)
-            {
-                t += step; // Goes from 0 to 1, incrementing by step each time
-                Position = Vector3.Lerp(Position, goalPos, t);
-                yield return Timing.WaitForOneFrame;
-            }
-            Position = goalPos; */
 
             while (Position != goalPos)
             {

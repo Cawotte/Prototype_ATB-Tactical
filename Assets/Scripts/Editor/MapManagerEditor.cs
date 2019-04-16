@@ -4,12 +4,12 @@ using Tactical.Map;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(MapManager))]
+[CustomEditor(typeof(LevelManager))]
 public class MapManagerEditor : Editor
 {
     public void OnSceneGUI()
     {
-        Map map = ((MapManager)target).Map;
+        Map map = ((LevelManager)target).Map;
 
         if ( map == null || !Application.isPlaying )
         {
@@ -26,7 +26,7 @@ public class MapManagerEditor : Editor
         //Display a text with the index of the closest tile from the mouse position, and its world coordinates.
 
         Vector3 mouseWorldPos = GetMousePositionEditor();
-        Map.Tile tile = map.GetTileAt(mouseWorldPos);
+        MapTile tile = map.GetTileAt(mouseWorldPos);
 
         //Display coordinates info
         string infoText = "";

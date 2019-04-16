@@ -15,24 +15,7 @@
         // Update is called once per frame
         void Update()
         {
-            if (isMoving)
-            {
-                return;
-            }
-
-            if (Input.GetMouseButtonDown(0))
-            {
-                clickedWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                path = MapManager.Instance.Pathfinder.GetTilePath(Position, clickedWorldPos);
-                MapManager.Instance.Painter.DrawPath(path);
-            }
-            if (Input.GetMouseButtonDown(1))
-            {
-                if (atbGauge.IsFull())
-                {
-                    MoveToGoal();
-                }
-            }
+            
         }
     }
 }
