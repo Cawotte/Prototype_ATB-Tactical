@@ -11,14 +11,17 @@
 
     public class Character : MonoBehaviour
     {
-        
-        [SerializeField] protected float speed  = 4;
-        [SerializeField] protected UICharacter characUI = null;
-        [SerializeField] private ATBGauge atbGauge = null;
 
+        [SerializeField] protected UICharacter characUI = null;
+        [SerializeField] protected GameObject prefabCharacUI = null;
+
+        [SerializeField] protected float speed  = 4;
+        [SerializeField] private ATBGauge atbGauge = null;
         [SerializeField] private Stack<MapTile> path = new Stack<MapTile>();
         private bool isMoving = false;
 
+        private Action<Vector3> OnPositionChange = null;
+        #region Properties
         public Vector3 Position
         {
             get
@@ -29,17 +32,26 @@
             set
             {
                 transform.position = value;
-                characUI.SetATBPosition(Position);
+                OnPositionChange?.Invoke(value);
             }
         }
 
         public Stack<MapTile> Path { get => path; set => path = value; }
         public bool IsMoving { get => isMoving; }
         public ATBGauge AtbGauge { get => atbGauge; set => atbGauge = value; }
-
+        #endregion
         private void Start()
         {
+            //No UI assigned ? Generate one from the prefab
+            if (characUI == null)
+            {
+                characUI = Instantiate(prefabCharacUI, UIManager.Instance.WorldCanvas).GetComponent<UICharacter>();
+            }
+
             characUI.SetATBPosition(transform.position);
+
+            OnPositionChange += characUI.SetATBPosition;
+
             atbGauge.OnValueChange += characUI.SetATBValue;
             atbGauge.ResetValue();
         }

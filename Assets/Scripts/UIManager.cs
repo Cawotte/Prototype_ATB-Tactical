@@ -6,7 +6,10 @@ using UnityEngine.UI;
 public class UIManager : Singleton<UIManager> {
 
     [SerializeField] Camera mainCamera;
+    [SerializeField] Transform worldCanvas;
     [SerializeField] Slider playerATB;
+
+    public Transform WorldCanvas { get => worldCanvas; set => worldCanvas = value; }
 
     public void SetPlayerATB(float value)
     {

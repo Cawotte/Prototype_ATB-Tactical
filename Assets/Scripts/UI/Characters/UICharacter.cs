@@ -7,7 +7,7 @@
     using System;
 
     [Serializable]
-    public class UICharacter
+    public class UICharacter : MonoBehaviour
     {
 
         [SerializeField] private Slider characterATB;
@@ -22,8 +22,6 @@
         {
             Vector3 offset = offsetATB;
             characterATB.transform.position = worldPos + offset;
-            //Vector3 pos = Camera.main.WorldToScreenPoint(worldPos + offset);
-            //characterATB.GetComponent<RectTransform>().anchoredPosition = pos;
         }
     }
 }
