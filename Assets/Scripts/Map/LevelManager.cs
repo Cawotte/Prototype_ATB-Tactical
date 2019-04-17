@@ -76,10 +76,26 @@
 
         private void Start()
         {
-            inputManager.OnTileSelection += (tile) => DrawPath(selectedCharacter, tile);
+            inputManager.OnTileSelection += (tile) => LeftClick(tile);
             inputManager.OnTileReselection += (tile) => TryMovingCharacter();
         }
 
+        private void LeftClick(MapTile tile)
+        {
+            if (tile.HasACharacter() && !tile.HasCharacter(selectedCharacter))
+            {
+                selectedCharacter = tile.Characters[0];
+                Debug.Log("New character selected !");
+                painter.ErasePath();
+            }
+            else
+            {
+                DrawPath(selectedCharacter, tile);
+            }
+
+
+
+        }
         private void DrawPath(Character character, MapTile tile)
         {
             if (selectedCharacter.IsMoving) return;

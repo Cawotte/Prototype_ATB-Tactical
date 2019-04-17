@@ -18,9 +18,26 @@
         [SerializeField] protected float speed  = 4;
         [SerializeField] private ATBGauge atbGauge = null;
         [SerializeField] private Stack<MapTile> path = new Stack<MapTile>();
+
+        private Map map = null;
+        private MapTile currentTile = null;
         private bool isMoving = false;
 
         private Action<Vector3> OnPositionChange = null;
+        private Action<MapTile, MapTile> OnTileChange = null;
+
+
+        private MapTile CurrentTile {
+            get => currentTile;
+            set {
+                if (currentTile != null)
+                {
+                    currentTile.Characters.Remove(this);
+                }
+                currentTile = value;
+                currentTile.Characters.Add(this);
+            }
+        }
         #region Properties
         public Vector3 Position
         {
@@ -36,6 +53,8 @@
             }
         }
 
+
+
         public Stack<MapTile> Path { get => path; set => path = value; }
         public bool IsMoving { get => isMoving; }
         public ATBGauge AtbGauge { get => atbGauge; set => atbGauge = value; }
@@ -47,6 +66,10 @@
             {
                 characUI = Instantiate(prefabCharacUI, UIManager.Instance.WorldCanvas).GetComponent<UICharacter>();
             }
+
+            //Get the map
+            map = LevelManager.Instance.Map;
+            CurrentTile = map.GetTileAt(Position);
 
             characUI.SetATBPosition(transform.position);
 
@@ -65,9 +88,10 @@
         {
             Timing.RunCoroutine(_MoveAlongPath().CancelWith(gameObject));
         }
+
+        
         #region Private Methods
-
-
+        
         private Vector3 GetCharacterCellCenter()
         {
             return LevelManager.Instance.Grid.GetCellCenterWorld(LevelManager.Instance.Grid.WorldToCell(transform.position));
@@ -118,6 +142,8 @@
                     Position = Vector3.MoveTowards(Position, nextPos, speed * Time.fixedDeltaTime);
                 }
 
+                OnTileChange?.Invoke(currentTile, nextTile);
+                CurrentTile = nextTile;
                 LevelManager.Instance.Painter.ErasePathTileAt(nextTile.CellPos);
             }
 

@@ -186,6 +186,7 @@ namespace Tactical.Map
                 }
             }
 
+
             MapTile tile = new MapTile(
                 cellPos,
                 grid.GetCellCenterWorld(cellPos),
