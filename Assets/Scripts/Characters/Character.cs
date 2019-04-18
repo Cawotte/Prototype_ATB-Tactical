@@ -1,4 +1,4 @@
-﻿namespace Tactical.Characters
+﻿namespace Cawotte.Tactical.Level
 {
 
 
@@ -7,7 +7,8 @@
     using System.Collections.Generic;
     using UnityEngine;
     using MEC;
-    using Tactical.Map;
+    using Cawotte.Tactical.Level;
+    using Cawotte.Utils;
 
     public class Character : MonoBehaviour
     {

@@ -1,7 +1,8 @@
-﻿namespace Tactical.Map
+﻿namespace Cawotte.Tactical.Level
 {
 
-    using Tactical;
+    using Cawotte.Tactical;
+    using Cawotte.Utils;
     using System.Collections;
     using System.Collections.Generic;
     using UnityEngine;

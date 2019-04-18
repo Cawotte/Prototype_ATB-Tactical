@@ -1,4 +1,4 @@
-﻿namespace Tactical.Map
+﻿namespace Cawotte.Tactical.Level
 {
     using System.Collections;
     using System.Collections.Generic;

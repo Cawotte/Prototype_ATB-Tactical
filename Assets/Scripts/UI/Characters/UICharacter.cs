@@ -1,4 +1,4 @@
-﻿namespace Tactical.Characters
+﻿namespace Cawotte.Tactical.Level
 {
     using System.Collections;
     using System.Collections.Generic;

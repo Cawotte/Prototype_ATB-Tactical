@@ -1,33 +1,35 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-[Serializable]
-public class Serializable2DArray<T>
+﻿namespace Cawotte.Utils
 {
-    public int Width;
-    public int Height;
-    public T[] Array;
 
-    public T this[int i, int j]
+    using System;
+
+    [Serializable]
+    public class Serializable2DArray<T>
     {
-        get
+        public int Width;
+        public int Height;
+        public T[] Array;
+
+        public T this[int i, int j]
         {
-            return Array[(j * Width) + i];
+            get
+            {
+                return Array[(j * Width) + i];
+            }
+            set
+            {
+                Array[(j * Width) + i] = value;
+            }
         }
-        set
+
+        public Serializable2DArray(int width, int height)
         {
-            Array[(j * Width) + i] = value;
+            Width = width;
+            Height = height;
+            Array = new T[width * height];
         }
     }
 
-    public Serializable2DArray(int width, int height)
-    {
-        Width = width;
-        Height = height;
-        Array = new T[width * height];
-    }
 }
 
 

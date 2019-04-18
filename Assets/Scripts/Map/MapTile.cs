@@ -1,9 +1,8 @@
 ﻿
-namespace Tactical.Map
+namespace Cawotte.Tactical.Level
 {
     using System;
     using System.Collections.Generic;
-    using Tactical.Characters;
     using UnityEngine;
 
     [Serializable]

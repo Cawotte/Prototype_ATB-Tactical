@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Tactical.Map;
+using Cawotte.Tactical.Level;
 using UnityEditor;
 using UnityEngine;
 

@@ -1,11 +1,12 @@
 ﻿
-namespace Tactical.Map
+namespace Cawotte.Tactical.Level
 {
     using System.Collections;
     using System.Collections.Generic;
     using UnityEngine;
     using System;
     using UnityEngine.Tilemaps;
+    using Cawotte.Utils;
 
     [Serializable]
     public class Map {
