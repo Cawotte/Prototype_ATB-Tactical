@@ -9,6 +9,7 @@
     using MEC;
     using Cawotte.Tactical.Level;
     using Cawotte.Utils;
+    using Cawotte.Tactical.UI;
 
     public class Character : MonoBehaviour
     {
@@ -65,7 +66,7 @@
             //No UI assigned ? Generate one from the prefab
             if (characUI == null)
             {
-                characUI = Instantiate(prefabCharacUI, UIManager.Instance.WorldCanvas).GetComponent<UICharacter>();
+                characUI = Instantiate(prefabCharacUI, WorldUIManager.Instance.CharactersUIParent).GetComponent<UICharacter>();
             }
 
             //Get the map

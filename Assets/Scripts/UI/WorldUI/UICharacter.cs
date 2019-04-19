@@ -1,4 +1,4 @@
-﻿namespace Cawotte.Tactical.Level
+﻿namespace Cawotte.Tactical.UI
 {
     using System.Collections;
     using System.Collections.Generic;
