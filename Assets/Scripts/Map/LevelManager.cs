@@ -87,16 +87,16 @@
             {
                 selectedCharacter = tile.Characters[0];
                 Debug.Log("New character selected !");
-                painter.ErasePath();
+                painter.EraseTiles();
             }
             else
             {
                 DrawPath(selectedCharacter, tile);
             }
-
-
+            
 
         }
+
         private void DrawPath(Character character, MapTile tile)
         {
             if (selectedCharacter.IsMoving) return;
@@ -107,8 +107,12 @@
                 return;
             }
 
-            character.Path = pathfinder.GetTilePath(character.Position, tile.CenterWorld);
-            painter.DrawPath(character.Path);
+            character.Path = pathfinder.GetPath(character.Position, tile.CenterWorld);
+
+            if (!character.Path.IsEmpty)
+            {
+                painter.PaintTiles(character.Path.GetCellArray());
+            }
 
         }
 
@@ -119,10 +123,6 @@
                 selectedCharacter.MoveToGoal();
             }
         }
-
-
-
-
 
     }
 

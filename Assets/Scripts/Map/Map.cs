@@ -86,6 +86,7 @@ namespace Cawotte.Tactical.Level
             LoadMap();
         }
 
+        #region Public Methods
         #region Tiles getter
         /// <summary>
         /// Return the tile at the given cell position
@@ -138,6 +139,11 @@ namespace Cawotte.Tactical.Level
         }
         #endregion
 
+        public int GetManhattanDistance(Vector2 A, Vector2 B)
+        {
+            return (int)Math.Abs(B.x - A.x) + (int)Math.Abs(B.y - A.y);
+        }
+
         #region Boolean Methods
         /// <summary>
         /// Return true if the given grid coordinate is within cell bounds.
@@ -158,6 +164,7 @@ namespace Cawotte.Tactical.Level
 
         #endregion
 
+        #endregion
         #region Private Methods
         /// <summary>
         /// Return the tile at the given CellPos by reading tilemaps.

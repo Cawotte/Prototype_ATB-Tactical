@@ -16,19 +16,12 @@
             this.mapGrid = mapGrid;
         }
 
-        public Stack<Vector3> GetWorldPath(Vector3 startWorldPos, Vector3 goalWorldPos)
+        public TilePath GetPath(Vector3 startWorldPos, Vector3 goalWorldPos)
         {
 
-            Stack<MapTile> tilePath = GetTilePath(mapGrid.GetTileIndexAt(startWorldPos), mapGrid.GetTileIndexAt(goalWorldPos));
-
-            return GetWorldPath(tilePath);
+            return new TilePath(GetTilePath(mapGrid.GetTileIndexAt(startWorldPos), mapGrid.GetTileIndexAt(goalWorldPos)));
         }
-
-        public Stack<MapTile> GetTilePath(Vector3 startWorldPos, Vector3 goalWorldPos)
-        {
-
-            return GetTilePath(mapGrid.GetTileIndexAt(startWorldPos), mapGrid.GetTileIndexAt(goalWorldPos));
-        }
+        
 
         /// <summary>
         /// Return the cell path from start to goal.
@@ -39,7 +32,7 @@
         /// <param name="startPos"></param>
         /// <param name="endPos"></param>
         /// <returns></returns>
-        public Stack<MapTile> GetTilePath(Vector2Int startGridPos, Vector2Int endGridPos)
+        private Stack<MapTile> GetTilePath(Vector2Int startGridPos, Vector2Int endGridPos)
         {
             StarCell start = new StarCell(startGridPos);
             StarCell goal = new StarCell(endGridPos);
@@ -170,35 +163,8 @@
             return mapGrid[cellPos].IsWalkable();
         }
 
-        #region Static Methods
-        public static Stack<Vector3> GetWorldPath(Stack<MapTile> path)
-        {
-            Stack<Vector3> worldPath = new Stack<Vector3>();
-            
-            //Build World path from tile path
-            Stack<MapTile> copyPath = new Stack<MapTile>(path); //We reverse the pile, cuz it's gonna be re-reversed
-            while (copyPath.Count > 0)
-            {
-                worldPath.Push(copyPath.Pop().CenterWorld);
-            }
-
-            return worldPath;
-        }
-
-        public static Stack<Vector3Int> GetCellPath(Stack<MapTile> path)
-        {
-            Stack<Vector3Int> cellPath = new Stack<Vector3Int>();
-
-            //Build World path from tile path
-            Stack<MapTile> copyPath = new Stack<MapTile>(path); //We reverse the pile, cuz it's gonna be re-reversed
-            while (copyPath.Count > 0)
-            {
-                cellPath.Push(copyPath.Pop().CellPos);
-            }
-
-            return cellPath;
-        }
         #endregion
+
 
         #region Pathfinding Cell classes
         private class PathCell
@@ -245,7 +211,6 @@
 
             }
         }
-        #endregion
         #endregion
 
     }

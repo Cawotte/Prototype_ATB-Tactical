@@ -11,15 +11,21 @@
     using Cawotte.Utils;
     using Cawotte.Tactical.UI;
 
-    public class Character : MonoBehaviour
+    public class Character : MapObject
     {
-
+        [Header("GameObjects")]
         [SerializeField] protected UICharacter characUI = null;
         [SerializeField] protected GameObject prefabCharacUI = null;
 
-        [SerializeField] protected float speed  = 4;
-        [SerializeField] private ATBGauge atbGauge = null;
-        [SerializeField] private Stack<MapTile> path = new Stack<MapTile>();
+        [Header("Informations")]
+        [SerializeField] private TilePath path = new TilePath();
+
+        private ATBGauge atbGauge = null;
+
+        [Header("Characteristics")]
+        [SerializeField] protected float speed = 4f;
+        [SerializeField] protected int movement = 4;
+        [SerializeField] protected float timerATB = 1f;
 
         private Map map = null;
         private MapTile currentTile = null;
@@ -57,7 +63,7 @@
 
 
 
-        public Stack<MapTile> Path { get => path; set => path = value; }
+        public TilePath Path { get => path; set => path = value; }
         public bool IsMoving { get => isMoving; }
         public ATBGauge AtbGauge { get => atbGauge; set => atbGauge = value; }
         #endregion
@@ -77,15 +83,18 @@
 
             OnPositionChange += characUI.SetATBPosition;
 
+            atbGauge = new ATBGauge(timerATB);
             atbGauge.OnValueChange += characUI.SetATBValue;
             atbGauge.ResetValue();
+
         }
 
 
         public bool HasPath()
         {
-            return path != null && path.Count != 0;
+            return !path.IsEmpty;
         }
+
         public void MoveToGoal()
         {
             Timing.RunCoroutine(_MoveAlongPath().CancelWith(gameObject));
@@ -104,21 +113,19 @@
 
         private IEnumerator<float> _MoveAlongPath()
         {
-            if (path == null || path.Count == 0)
+            if (path.IsEmpty)
             {
                 yield break;
             }
             
             atbGauge.Consume(100);
 
+
             //Instantaneous movement
             if (speed <= 0)
             {
-                while (path.Count > 1)
-                {
-                    path.Pop();
-                }
-                Position = path.Pop().CenterWorld;
+
+                Position = Path.Goal.CenterWorld;
                 atbGauge.StartReloading();
                 yield break;
             }
@@ -127,14 +134,17 @@
             Vector3 nextPos;
             MapTile nextTile;
 
+            Stack<MapTile>.Enumerator enumerator = path.Path.GetEnumerator();
+
             isMoving = true;
 
-            path.Pop();
+            //path.Pop();
+            enumerator.MoveNext();
 
             //The character move from cell to cell.
-            while (path.Count > 0)
+            while (enumerator.MoveNext())
             {
-                nextTile = path.Pop();
+                nextTile = enumerator.Current;
                 nextPos = nextTile.CenterWorld;
 
 
@@ -146,7 +156,7 @@
 
                 OnTileChange?.Invoke(currentTile, nextTile);
                 CurrentTile = nextTile;
-                LevelManager.Instance.Painter.ErasePathTileAt(nextTile.CellPos);
+                LevelManager.Instance.Painter.EraseTileAt(nextTile.CellPos);
             }
 
             atbGauge.StartReloading();

@@ -12,7 +12,7 @@
     {
 
         #region Private Members
-        [SerializeField] private float maxFillDuration = 1f;
+        [SerializeField] private float reloadDuration = 1f;
 
         private const float maxValue = 1f;
         private float currentValue = 1f;
@@ -40,11 +40,12 @@
             }
         }
 
-        public ATBGauge (float maxValue, float maxFillDuration)
+        public float ReloadDuration { get => reloadDuration; set => reloadDuration = value; }
+
+        public ATBGauge (float reloadDuration)
         {
-            //this.maxValue = maxValue;
             this.currentValue = maxValue;
-            this.maxFillDuration = maxFillDuration;
+            this.reloadDuration = reloadDuration;
         }
 
         #region Public Methods
@@ -91,12 +92,12 @@
             float t = 0f;
 
             //We scale t with the remaining ATB fill
-            t = Mathf.Lerp(0, maxFillDuration, CurrentValue / maxValue);
+            t = Mathf.Lerp(0, reloadDuration, CurrentValue / maxValue);
 
-            while (t < maxFillDuration)
+            while (t < reloadDuration)
             {
                 t += Time.deltaTime;
-                CurrentValue = Mathf.Lerp(0, maxValue, t / maxFillDuration);
+                CurrentValue = Mathf.Lerp(0, maxValue, t / reloadDuration);
                 yield return Timing.WaitForOneFrame;
             }
 

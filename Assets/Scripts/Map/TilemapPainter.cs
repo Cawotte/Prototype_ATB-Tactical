@@ -8,38 +8,35 @@
     [System.Serializable]
     public class TilemapPainter
     {
-
-        [SerializeField] private Grid grid;
-        [SerializeField] private Tilemap pathTilemap;
-        [SerializeField] private Tile pathTile;
-
-        public TilemapPainter(Grid grid)
+        
+        [SerializeField] private Tilemap tilemap;
+        [SerializeField] private Tile defaultTile;
+        
+        public void PaintTiles(Vector3Int[] cells)
         {
-            this.grid = grid;
-        }
 
-        public void DrawPath(Stack<MapTile> path)
-        {
-            if (path == null)
+            //Stack <Vector3Int> cellPath = Pathfinder.GetCellPath(path);
+            
+            TileBase[] tiles = new TileBase[cells.Length];
+
+            tilemap.ClearAllTiles();
+            for (int i = 0; i < tiles.Length; i++)
             {
-                return;
+                tiles[i] = defaultTile;
             }
-            Stack<Vector3Int> cellPath = Pathfinder.GetCellPath(path);
-            pathTilemap.ClearAllTiles();
-            while (cellPath.Count > 0)
-            {
-                pathTilemap.SetTile(cellPath.Pop(), pathTile);
-            }
+
+            tilemap.SetTiles(cells, tiles);
+
         }
 
-        public void ErasePath()
+        public void EraseTiles()
         {
-            pathTilemap.ClearAllTiles();
+            tilemap.ClearAllTiles();
         }
 
-        public void ErasePathTileAt(Vector3Int cellPos)
+        public void EraseTileAt(Vector3Int cellPos)
         {
-            pathTilemap.SetTile(cellPos, null);
+            tilemap.SetTile(cellPos, null);
         }
     }
 }
