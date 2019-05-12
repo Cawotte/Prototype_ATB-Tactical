@@ -27,8 +27,7 @@ namespace Cawotte.Tactical.Level
         public MapTile CurrentTile
         {
             get => currentTile;
-
-            ///! private
+            
             protected set
             {
                 //remove previous

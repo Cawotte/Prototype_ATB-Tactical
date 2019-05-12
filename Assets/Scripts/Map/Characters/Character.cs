@@ -34,6 +34,7 @@
         public bool IsMoving { get => isMoving; }
         public ATBGauge AtbGauge { get => atbGauge; set => atbGauge = value; }
 
+
         private new void Start()
         {
             base.Start(); //Get map and currentTile
