@@ -3,26 +3,47 @@ namespace Cawotte.Tactical.Level
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using UnityEngine;
 
     [Serializable]
     public class MapTile
     {
-        public Vector3Int CellPos;
-        public Vector2Int CellPos2;
-        public Vector3 CenterWorld;
-        public TileType Type;
+        //Note : Set Tile member as [ReadOnly] to avoid modifications because of SerializeField
 
-        private List<Character> characters = new List<Character>();
+        #region Members
+        [SerializeField]
+        private Vector3Int cellPos;
 
-        public List<Character> Characters { get => characters; }
+        [SerializeField]
+        private Vector2Int cellPos2;
+
+        [SerializeField]
+        private Vector3 centerWorld;
+        
+        [SerializeField]
+        private TileType type;
+
+        [SerializeField]
+        private List<MapObject> content = new List<MapObject>();
+
+        #endregion
+
+        #region Properties
+        public List<MapObject> Content { get => content; }
+
+        public Vector3Int CellPos { get => cellPos;  }
+        public Vector2Int CellPos2 { get => cellPos2; }
+        public Vector3 CenterWorld { get => centerWorld; }
+        public TileType Type { get => type;  }
+        #endregion
 
         public MapTile(Vector3Int cellPos, Vector3 cellCenter, TileType type)
         {
-            this.CellPos = cellPos;
-            this.CellPos2 = new Vector2Int(cellPos.x, cellPos.y);
-            this.CenterWorld = cellCenter;
-            this.Type = type;
+            this.cellPos = cellPos;
+            this.cellPos2 = new Vector2Int(cellPos.x, cellPos.y);
+            this.centerWorld = cellCenter;
+            this.type = type;
         }
 
 
@@ -31,14 +52,41 @@ namespace Cawotte.Tactical.Level
             return Type == TileType.Ground;
         }
 
-        public bool HasCharacter(Character character)
+        public bool Contains(MapObject mapObject)
         {
-            return characters.Contains(character);
+            return content.Contains(mapObject);
         }
 
-        public bool HasACharacter()
+        public bool Add(MapObject mapObject)
         {
-            return characters.Count != 0;
+            if (content.Contains(mapObject))
+            {
+                return false;
+            }
+            content.Add(mapObject);
+            return true;
+        }
+
+        public bool Remove(MapObject mapObject)
+        {
+            if (!content.Contains(mapObject))
+            {
+                return false;
+            }
+            content.Remove(mapObject);
+            return true;
+        }
+
+        public bool ContainsACharacter()
+        {
+            foreach (MapObject obj in content)
+            {
+                if (obj is Character)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public override string ToString()

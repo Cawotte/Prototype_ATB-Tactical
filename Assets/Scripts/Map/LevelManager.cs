@@ -83,9 +83,9 @@
 
         private void LeftClick(MapTile tile)
         {
-            if (tile.HasACharacter() && !tile.HasCharacter(selectedCharacter))
+            if (tile.ContainsACharacter() && !tile.Contains(selectedCharacter))
             {
-                selectedCharacter = tile.Characters[0];
+                selectedCharacter = (Character)tile.Content[0];
                 Debug.Log("New character selected !");
                 painter.EraseTiles();
             }

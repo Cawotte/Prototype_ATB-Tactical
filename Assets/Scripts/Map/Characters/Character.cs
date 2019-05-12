@@ -26,63 +26,29 @@
         [SerializeField] protected float speed = 4f;
         [SerializeField] protected int movement = 4;
         [SerializeField] protected float timerATB = 1f;
-
-        private Map map = null;
-        private MapTile currentTile = null;
+        
         private bool isMoving = false;
-
-        private Action<Vector3> OnPositionChange = null;
-        private Action<MapTile, MapTile> OnTileChange = null;
-
-
-        private MapTile CurrentTile {
-            get => currentTile;
-            set {
-                if (currentTile != null)
-                {
-                    currentTile.Characters.Remove(this);
-                }
-                currentTile = value;
-                currentTile.Characters.Add(this);
-            }
-        }
-        #region Properties
-        public Vector3 Position
-        {
-            get
-            {
-                return transform.position;
-            }
-
-            set
-            {
-                transform.position = value;
-                OnPositionChange?.Invoke(value);
-            }
-        }
-
-
+        
 
         public TilePath Path { get => path; set => path = value; }
         public bool IsMoving { get => isMoving; }
         public ATBGauge AtbGauge { get => atbGauge; set => atbGauge = value; }
-        #endregion
-        private void Start()
+
+        private new void Start()
         {
+            base.Start(); //Get map and currentTile
+
             //No UI assigned ? Generate one from the prefab
             if (characUI == null)
             {
                 characUI = Instantiate(prefabCharacUI, WorldUIManager.Instance.CharactersUIParent).GetComponent<UICharacter>();
             }
-
-            //Get the map
-            map = LevelManager.Instance.Map;
-            CurrentTile = map.GetTileAt(Position);
-
+            
+            //Init UI
             characUI.SetATBPosition(transform.position);
-
             OnPositionChange += characUI.SetATBPosition;
 
+            //Init ATB
             atbGauge = new ATBGauge(timerATB);
             atbGauge.OnValueChange += characUI.SetATBValue;
             atbGauge.ResetValue();
@@ -103,10 +69,7 @@
         
         #region Private Methods
         
-        private Vector3 GetCharacterCellCenter()
-        {
-            return LevelManager.Instance.Grid.GetCellCenterWorld(LevelManager.Instance.Grid.WorldToCell(transform.position));
-        }
+
         #endregion
 
         #region Coroutines
@@ -154,7 +117,7 @@
                     Position = Vector3.MoveTowards(Position, nextPos, speed * Time.fixedDeltaTime);
                 }
 
-                OnTileChange?.Invoke(currentTile, nextTile);
+                //OnTileChange?.Invoke(currentTile, nextTile);
                 CurrentTile = nextTile;
                 LevelManager.Instance.Painter.EraseTileAt(nextTile.CellPos);
             }
